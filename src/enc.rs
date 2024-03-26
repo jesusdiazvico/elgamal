@@ -23,12 +23,16 @@ pub fn encrypt_impl(pk: &EGPublicKey, message: &Message, r: &Message) -> Ciphert
     )
 }
 
-pub fn decrypt_impl(sk: &EGSecretKey, ciphertext: &Ciphertext, message_set: &[String]) -> String {
+pub fn decrypt_impl(
+    sk: &EGSecretKey,
+    ciphertext: &Ciphertext,
+    message_set: &[String],
+) -> Result<String, &'static str> {
     let bbs = Bbs::<Bls12381Sha256>::default();
     let plaintext_in_group = ciphertext.1 - sk.0 * ciphertext.0;
     let result = message_set
         .iter()
         .find(|msg| G1Projective::generator() * bbs.message(msg).0 == plaintext_in_group)
-        .unwrap();
-    String::from(result)
+        .ok_or("Decryption failed")?;
+    Ok(String::from(result))
 }

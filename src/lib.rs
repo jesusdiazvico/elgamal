@@ -21,7 +21,11 @@ pub fn encrypt(pk: &EGPublicKey, message: &Message, r: &Message) -> Ciphertext {
     enc::encrypt_impl(pk, message, r)
 }
 
-pub fn decrypt(sk: &EGSecretKey, ciphertext: &Ciphertext, message_set: &[String]) -> String {
+pub fn decrypt(
+    sk: &EGSecretKey,
+    ciphertext: &Ciphertext,
+    message_set: &[String],
+) -> Result<String, &'static str> {
     enc::decrypt_impl(sk, ciphertext, message_set)
 }
 
@@ -46,7 +50,7 @@ mod test {
     }
 
     #[test]
-    fn elgamal_demo_fail() {
+    fn elgamal_demo_should_fail() {
         let bbs = Bbs::<Bls12381Sha256>::default();
         let mut rng = rand_chacha::ChaCha8Rng::from_seed([0u8; 32]);
         let (pk, sk) = keygen(&mut rng);
@@ -54,7 +58,6 @@ mod test {
         let r = sample_randomness(&mut rng);
         let c = encrypt(&pk, &data, &r);
         let msg_set = [String::from("This ElGamal thingy works.")];
-        let dm = decrypt(&sk, &c, &msg_set);
-        println!("Decrypted message: {:?}", dm);
+        assert!(decrypt(&sk, &c, &msg_set).is_err());
     }
 }
